@@ -34,3 +34,24 @@ export const atraparPokemon = async (pokemon: ObjectId, nickname: string, traine
 }
 
 
+export const liberarPokemon = async (pokemonid: string , trainerId: string) => {
+
+    const db = getDB();
+
+    const pokemoncap = await db.collection(OwnedCollection).findOne({_id: new ObjectId(pokemonid)});
+    if(!pokemoncap) throw new Error("Pokemon no existe");
+
+    await db.collection(OwnedCollection).deleteOne({ _id: new ObjectId(pokemonid) });
+
+    const result = await db.collection(TrainersCollection).updateOne(
+        { _id: new ObjectId(trainerId) },
+        { $addToSet: { pokemons: new ObjectId(pokemonid) } }
+    );
+
+    if (result.modifiedCount === 0) throw new Error("Owned Pokemon not found for this trainer");
+
+    
+
+    return await db.collection(TrainersCollection).findOne({ _id: new ObjectId(trainerId) });
+
+}

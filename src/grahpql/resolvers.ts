@@ -6,7 +6,7 @@ import { ObjectId } from "mongodb";
 import { createUser, validateUser } from "../collections/userFunction";
 import { crearPokemon } from "../collections/pokemonFunction";
 import { OwnedCollection, PokemonsCollection } from "../utils";
-import { atraparPokemon } from "../collections/ownedFunction";
+import { atraparPokemon, liberarPokemon } from "../collections/ownedFunction";
 
 
 
@@ -66,14 +66,27 @@ export const resolvers: IResolvers = {
             if(!result) return null;
 
             return result;
+        },
+        freePokemon: async (_,{ownedPokemonId}, { user }) => {
+            if(!user) throw new Error("Entrenador desconocido");
+
+            const result = await liberarPokemon(ownedPokemonId, user._id.toString());
+            if(!result) return null;
+
+            return result;
         }
     },
 
-    Trainer: { 
-        pokemons: async (trainer:Trainer) => {
-            return trainer.pokemons || [];
-        }
+    Trainer: {
+         pokemons: async (parent:Trainer) => {
+            const db = getDB(); 
+            const listaPokemons= parent.pokemons || [];
+            if(!listaPokemons) return null;
 
+            const objetosPokemon= listaPokemons.map((id)=> new ObjectId(id._id));
+
+            return db.collection(OwnedCollection).find({_id: { $in: objetosPokemon}}).toArray(); 
+        }
     },
 
     OwnedPokemon : {

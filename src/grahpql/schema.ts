@@ -64,5 +64,6 @@ export const typeDefs = gql`
     login(name: String!, password: String!): String!
     createPokemon(name: String!,description: String!,height: Float!,weight: Float!,types: [PokemonType!]!): Pokemon!
     catchPokemon(pokemonId: ID!, nickname: String): OwnedPokemon!
+    freePokemon(ownedPokemonId: ID!): Trainer!
     }
 `
