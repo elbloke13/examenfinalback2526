@@ -1,14 +1,16 @@
 import bcrypt from "bcryptjs";
 import { getDB } from "../db/mongo";
-import { USERS_COLLECTION } from "../utils";
+import { TrainersCollection } from "../utils";
 
-export const createUser = async (email: string, password: string) => {
+export const createUser = async (name: string, password: string) => {
     const db = getDB();
-
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const result = await db.collection(USERS_COLLECTION).insertOne({
-        email,
+    const nameexists = await db.collection(TrainersCollection).findOne({name: name});
+    if(nameexists) throw new Error("Entrenador ya existe")
+
+    const result = await db.collection(TrainersCollection).insertOne({
+        name,
         password: passwordHash,
 
     });
@@ -16,10 +18,10 @@ export const createUser = async (email: string, password: string) => {
     return result.insertedId.toString();
 }
 
-export const validateUser = async (email: string, password: string) => {
+export const validateUser = async (name: string, password: string) => {
     const db = getDB();
 
-    const user = await db.collection(USERS_COLLECTION).findOne({ email });
+    const user = await db.collection(TrainersCollection).findOne({ name });
     if(!user) return null;
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
