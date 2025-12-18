@@ -21,10 +21,16 @@ export const resolvers: IResolvers = {
                 ...user
             }
         },
-        pokemons: async () => {
-            const db = getDB();
-            return db.collection(PokemonsCollection).find().toArray()
+        pokemons: async (page:number , size: number) => {
+
+        const db = getDB(); 
+
+        page = page || 1; 
+        size = size || 10; 
+
+        return await db.collection(PokemonsCollection).find().skip((page-1)*size).limit(size).toArray(); 
         },
+
         pokemon: async (_, { id }) => {
             const db = getDB();
             const pokemon = db.collection(PokemonsCollection).findOne({_id: new ObjectId(id)});
@@ -52,10 +58,13 @@ export const resolvers: IResolvers = {
             return result;
 
         },
-        catchPokemon : async (_,{pokemonId,nickname},{user}) => {
-            if(!user) throw new Error ("inicia sesion porfavor");
-            
-            const result = await atraparPokemon(pokemonId,nickname,user._id)
+        catchPokemon : async (_,{pokemonId,nickname},{ user }) => {
+
+            if(!user) throw new Error("Entrenador desconocido");
+
+            const result = await atraparPokemon(pokemonId,nickname, user._id.toString());
+            if(!result) return null;
+
             return result;
         }
     },

@@ -29,5 +29,9 @@ export type OwnedPokemon = {
     _id: ObjectId,
     pokemon:ObjectId,
     nickname:string,
-    level:number
+    attack: number,
+    defense: number,
+    speed: number,
+    special: number,
+    level: number
 }
